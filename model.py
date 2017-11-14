@@ -181,12 +181,12 @@ meanPrediction = (SVRstack + RFRstack + BRstack + NNstack + ADAstack)/number_of_
 print('Simple Average Ensemble Score: %f' %(r2(meanPrediction, Ytest)))
 
 # Saving predictions to CSV
-SVRstack.tofile('SVR_prediction.csv', sep = ',', format = '%f')
-RFRstack.tofile('RFR_prediction.csv', sep = ',', format = '%f')
-BRstack.tofile('BR_prediction.csv', sep = ',', format = '%f')
-NNstack.tofile('NN_prediction.csv', sep = ',', format = '%f')
-ADAstack.tofile('ADA_prediction.csv', sep = ',', format = '%f')
-meanPrediction.tofile('mean_prediction.csv', sep = ',', format = '%f')
+SVRstack.tofile('./Data/SVR_prediction.csv', sep = ',', format = '%f')
+RFRstack.tofile('./Data/RFR_prediction.csv', sep = ',', format = '%f')
+BRstack.tofile('./Data/BR_prediction.csv', sep = ',', format = '%f')
+NNstack.tofile('./Data/NN_prediction.csv', sep = ',', format = '%f')
+ADAstack.tofile('./Data/ADA_prediction.csv', sep = ',', format = '%f')
+meanPrediction.tofile('./Data/mean_prediction.csv', sep = ',', format = '%f')
 
 
 
