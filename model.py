@@ -1,20 +1,27 @@
 ''' This script impliments an ensemble model '''
 
+# Basics 
 import pandas as pd
 import sklearn as sk
+import numpy as np
+from sklearn.metrics import r2_score as r2
+
+
+# Machine learning  
 from sklearn import svm
-from sklearn.model_selection import TimeSeriesSplit
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor
 from sklearn.linear_model import BayesianRidge
 from sklearn.neural_network import MLPRegressor
-import numpy as np
+from sklearn.model_selection import TimeSeriesSplit
+
+# Plotting 
 import seaborn as sb
 import matplotlib as matplot
 import matplotlib.pyplot as plot
 
 
 # Import data
-data = pd.read_csv('data.csv')
+data = pd.read_csv('./Data/data.csv')
 x = data.drop('price', axis = 1)
 y = data.price
 x = x.as_matrix()
@@ -32,8 +39,8 @@ tscv = TimeSeriesSplit(n_splits = 10)
 #%%
 
 # Creating model objects and list that will contain info from each CV fold
-svr = svm.SVR()
-svrinfo = []
+SVR = svm.SVR()
+SVRinfo = []
 
 RFR = RandomForestRegressor(max_depth = 4, random_state=0)
 RFRinfo = []
@@ -44,6 +51,10 @@ BRinfo = []
 NN = MLPRegressor()
 NNinfo = []
 
+ADA = AdaBoostRegressor()
+ADAinfo = []
+
+
 # Training and displaying the R2 and squared error for each iteration of K-fold
 iteration = 1
 for train_index, test_index in tscv.split(Ytrain):
@@ -51,17 +62,17 @@ for train_index, test_index in tscv.split(Ytrain):
     
     '''SVR'''
     # Train the model
-    svr.fit(Xtrain[train_index, :], Ytrain[train_index])
+    SVR.fit(Xtrain[train_index, :], Ytrain[train_index])
     
     # Calculate R2 scores for training and CV set
-    train_score = svr.score(Xtrain[train_index], Ytrain[train_index])
-    test_score = svr.score(Xtrain[test_index], Ytrain[test_index])
+    train_score = SVR.score(Xtrain[train_index], Ytrain[train_index])
+    test_score = SVR.score(Xtrain[test_index], Ytrain[test_index])
     
     # Calculate the squared error for training and CV set, save in list
-    train_error = (1/len(train_index))*sum((svr.predict(Xtrain[train_index]) - Ytrain[train_index])**2)
-    test_error = (1/len(test_index))*sum((svr.predict(Xtrain[test_index]) - Ytrain[test_index])**2)
-    svrinfo.append('**SVR**    R2 in I%d: Train: %f, Test: %f' %(iteration, train_score, test_score))
-    svrinfo.append('**SVR** Error in I%d: Train: %f, Test: %f' %(iteration, train_error, test_error))
+    train_error = (1/len(train_index))*sum((SVR.predict(Xtrain[train_index]) - Ytrain[train_index])**2)
+    test_error = (1/len(test_index))*sum((SVR.predict(Xtrain[test_index]) - Ytrain[test_index])**2)
+    SVRinfo.append('**SVR**    R2 in I%d: Train: %f, Test: %f' %(iteration, train_score, test_score))
+    SVRinfo.append('**SVR** Error in I%d: Train: %f, Test: %f' %(iteration, train_error, test_error))
 
 
 
@@ -113,10 +124,26 @@ for train_index, test_index in tscv.split(Ytrain):
     
     
     
+    '''AdaBoost Regressor'''
+    # Train the model
+    ADA.fit(Xtrain[train_index, :], Ytrain[train_index])
+    
+    # Calculate R2 scores for training and CV set
+    train_score = ADA.score(Xtrain[train_index], Ytrain[train_index])
+    test_score = ADA.score(Xtrain[test_index], Ytrain[test_index])
+    
+    # Calculate the squared error for training and CV set, save in list
+    train_error = (1/len(train_index))*sum((ADA.predict(Xtrain[train_index]) - Ytrain[train_index])**2)
+    test_error = (1/len(test_index))*sum((ADA.predict(Xtrain[test_index]) - Ytrain[test_index])**2)
+    ADAinfo.append('**ADA**    R2 in I%d: Train: %f, Test: %f' %(iteration, train_score, test_score))
+    ADAinfo.append('**ADA** Error in I%d: Train: %f, Test: %f' %(iteration, train_error, test_error))
+    
+    
+    
     iteration += 1
 
 # Printing training info
-print(*svrinfo, sep='\n')
+print(*SVRinfo, sep='\n')
 print('\n**********************')
 print(*RFRinfo, sep='\n')
 print('\n**********************')
@@ -124,23 +151,59 @@ print(*BRinfo, sep='\n')
 print('\n**********************')
 print(*NNinfo, sep='\n')
 print('**********************\n')
+print(*ADAinfo, sep='\n')
+print('**********************\n')
 
 
 # Printing score on test set
-print('SVR test score: %f' %(svr.score(Xtest, Ytest)))
+print('SVR test score: %f' %(SVR.score(Xtest, Ytest)))
 print('RFR test score: %f' %(RFR.score(Xtest, Ytest)))
 print('BR test score: %f' %(BR.score(Xtest, Ytest)))
 print('NN test score: %f' %(NN.score(Xtest, Ytest)))
+print('ADA test score: %f' %(ADA.score(Xtest, Ytest)))
+
+
+#%% 
+'''Simple Stacking: Averaging results'''
+
+# Defining 
+#def r2(prediction, actual):
+#    u = np.sum((actual - prediction)**2)
+#    v = np.sum((actual - actual.mean())**2)
+#    uv = u/v
+#    return 1 - uv
+
+# Calcuating predictions with test set
+SVRstack = SVR.predict(Xtest)
+RFRstack = RFR.predict(Xtest)
+BRstack = BR.predict(Xtest)
+NNstack = NN.predict(Xtest)
+ADAstack = ADA.predict(Xtest)
+
+# Calculating mean of predictions
+number_of_estimators = 5
+meanPrediction = (SVRstack + RFRstack + BRstack + NNstack + ADAstack)/number_of_estimators
+
+print('Simple Average Ensemble Score: %f' %(r2(meanPrediction, Ytest)))
+
+# Saving predictions to CSV
+SVRstack.tofile('SVR_prediction.csv', sep = ',', format = '%f')
+RFRstack.tofile('RFR_prediction.csv', sep = ',', format = '%f')
+BRstack.tofile('BR_prediction.csv', sep = ',', format = '%f')
+NNstack.tofile('NN_prediction.csv', sep = ',', format = '%f')
+ADAstack.tofile('ADA_prediction.csv', sep = ',', format = '%f')
+meanPrediction.tofile('mean_prediction.csv', sep = ',', format = '%f')
 
 #%%
-def reverse_transform(y):
-    return np.exp(y)+1
-
-Yactual = reverse_transform(Ytest)
-SVRactual = reverse_transform(svr.predict(Xtest))
-RFRactual = reverse_transform(RFR.predict(Xtest))
-BRactual = reverse_transform(BR.predict(Xtest))
-NNactual = reverse_transform(NN.predict(Xtest))
-
-SVRpdiff = (Yactual-SVRactual)/Yactual)*100
-SVRpdiff_mean = (1/len(Ytest))*sum(SVRpdiff)
+#def reverse_transform(y):
+#    return np.exp(y)+1
+#
+#Yactual = reverse_transform(Ytest)
+#SVRactual = reverse_transform(svr.predict(Xtest))
+#RFRactual = reverse_transform(RFR.predict(Xtest))
+#BRactual = reverse_transform(BR.predict(Xtest))
+#NNactual = reverse_transform(NN.predict(Xtest))
+#ADAactual = reverse_transform(ADA.predict(Xtest))
+#
+#SVRpdiff = (Yactual-SVRactual)/Yactual*100
+#SVRpdiff_mean = (1/len(Ytest))*sum(SVRpdiff)

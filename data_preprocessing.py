@@ -9,7 +9,7 @@ import copy
 ''' Data importing and feature engineering '''
 
 # Load the data into a Pandas dataframe
-data = pd.read_csv('kc_house_data.csv')
+data = pd.read_csv('./Data/kc_house_data.csv')
 
 # Sort according to date
 data = data.sort_values('date')
@@ -99,10 +99,10 @@ plot.yticks(rotation = 0)
 
 ''' Features are selected and ready for the next step of preprocessing. '''
 
-## Features are very different in terms of scale, so time for feature scaling. I'm choosing to do mean-normalization.
+# Features are very different in terms of scale, so time for feature scaling. I'm choosing to do mean-normalization.
 #for column in compdata:
-#    compdata[column] = (compdata[column] - compdata[column].mean())/(compdata[column].max() - compdata[column].min())
-
+#    compdata[column] = (compdata[column] - compdata[column].min())/(compdata[column].max() - compdata[column].min())
+#
 
 # Making a list of features to label the plot with, and a matrix from compdata for plotting
 features = list(compdata.axes[1])
@@ -139,13 +139,13 @@ for i in range(len(features)):
 # Features look much better.
 
 # Features are very different in terms of scale, so time for feature scaling. I'm choosing to do mean-normalization.
-for column in compdata.drop('price', axis = 1):
-    compdata[column] = (compdata[column] - compdata[column].mean())/(compdata[column].max() - compdata[column].min())
+for column in compdata.columns:  #.drop('price', axis = 1):
+    compdata[column] = (compdata[column] - compdata[column].min())/(compdata[column].max() - compdata[column].min())
 #%% 
 ''' I think the data is ready for a preliminary model. Time to split the data into training and CV sets '''    
 
 # Saving to CSV
-compdata.to_csv('data.csv', index = False)
+compdata.to_csv('./Data/data.csv', index = False)
 
 
 
