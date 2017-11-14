@@ -166,12 +166,6 @@ print('ADA test score: %f' %(ADA.score(Xtest, Ytest)))
 #%% 
 '''Simple Stacking: Averaging results'''
 
-# Defining 
-#def r2(prediction, actual):
-#    u = np.sum((actual - prediction)**2)
-#    v = np.sum((actual - actual.mean())**2)
-#    uv = u/v
-#    return 1 - uv
 
 # Calcuating predictions with test set
 SVRstack = SVR.predict(Xtest)
@@ -194,16 +188,5 @@ NNstack.tofile('NN_prediction.csv', sep = ',', format = '%f')
 ADAstack.tofile('ADA_prediction.csv', sep = ',', format = '%f')
 meanPrediction.tofile('mean_prediction.csv', sep = ',', format = '%f')
 
-#%%
-#def reverse_transform(y):
-#    return np.exp(y)+1
-#
-#Yactual = reverse_transform(Ytest)
-#SVRactual = reverse_transform(svr.predict(Xtest))
-#RFRactual = reverse_transform(RFR.predict(Xtest))
-#BRactual = reverse_transform(BR.predict(Xtest))
-#NNactual = reverse_transform(NN.predict(Xtest))
-#ADAactual = reverse_transform(ADA.predict(Xtest))
-#
-#SVRpdiff = (Yactual-SVRactual)/Yactual*100
-#SVRpdiff_mean = (1/len(Ytest))*sum(SVRpdiff)
+
+
